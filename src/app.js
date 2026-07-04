@@ -3,19 +3,26 @@
 // registered game definition, so hosting a different grid system means
 // registering it and swapping the id below.
 
-import { Camera } from './core/camera.js';
-import { Renderer } from './core/renderer.js';
-import { games } from './engine/registry.js';
-import './games/angel/index.js';
-import { Panel } from './ui/panel.js';
+import { Camera } from "./core/camera.js";
+import { Renderer } from "./core/renderer.js";
+import { games } from "./engine/registry.js";
+import "./games/angel/index.js";
+import { Panel } from "./ui/panel.js";
 
 export class App {
   constructor(root) {
-    this.def = games.get('angel');
-    this.canvas = root.querySelector('#board');
+    this.def = games.get("angel");
+    this.canvas = root.querySelector("#board");
     this.camera = new Camera();
     this.renderer = new Renderer(this.canvas, this.camera);
-    this.options = { legal: true, frontier: false, trail: true, territory: false, heatmap: false, grid: true };
+    this.options = {
+      legal: true,
+      frontier: false,
+      trail: true,
+      territory: false,
+      heatmap: false,
+      grid: true,
+    };
     this.renderer.gridEnabled = () => this.options.grid;
     this.hover = null;
     this.playing = false;
@@ -43,7 +50,10 @@ export class App {
     this.playing = true;
     this.acc = 0;
     this.camera.jumpTo(0.5, 0.5);
-    this.camera.scale = Math.max(16, Math.min(52, 340 / (config.power * 2 + 1)));
+    this.camera.scale = Math.max(
+      12,
+      Math.min(34, 230 / (config.power * 2 + 1)),
+    );
     this.panel.hideBanner();
   }
 
@@ -58,7 +68,7 @@ export class App {
     this.playing = false;
     if (this.game.state.result) return;
     if (this.game.currentIsHuman()) {
-      this.panel.toast('Human to move: click the board');
+      this.panel.toast("Human to move: click the board");
       return;
     }
     this.stepOnce();
@@ -78,7 +88,10 @@ export class App {
   onGameOver() {
     this.playing = false;
     const res = this.game.state.result;
-    if (res) this.panel.showBanner(`The Devil traps the Angel after ${res.rounds} rounds`);
+    if (res)
+      this.panel.showBanner(
+        `The Devil traps the Angel after ${res.rounds} rounds`,
+      );
   }
 
   clickCell(cell) {
@@ -132,19 +145,22 @@ export class App {
 
   _cellAt(e) {
     const rect = this.canvas.getBoundingClientRect();
-    const [wx, wy] = this.camera.screenToWorld(e.clientX - rect.left, e.clientY - rect.top);
+    const [wx, wy] = this.camera.screenToWorld(
+      e.clientX - rect.left,
+      e.clientY - rect.top,
+    );
     return { x: Math.floor(wx), y: Math.floor(wy) };
   }
 
   _bindPointer() {
     const cv = this.canvas;
     let drag = null;
-    cv.addEventListener('pointerdown', (e) => {
+    cv.addEventListener("pointerdown", (e) => {
       if (e.button !== 0 && e.button !== 1) return;
       cv.setPointerCapture(e.pointerId);
       drag = { x: e.clientX, y: e.clientY, moved: false };
     });
-    cv.addEventListener('pointermove', (e) => {
+    cv.addEventListener("pointermove", (e) => {
       this.hover = this._cellAt(e);
       if (drag && e.buttons) {
         const dx = e.clientX - drag.x;
@@ -158,44 +174,50 @@ export class App {
         }
       }
     });
-    cv.addEventListener('pointerup', (e) => {
+    cv.addEventListener("pointerup", (e) => {
       if (drag && !drag.moved) this.clickCell(this._cellAt(e));
       drag = null;
     });
-    cv.addEventListener('pointerleave', () => {
+    cv.addEventListener("pointerleave", () => {
       this.hover = null;
     });
     cv.addEventListener(
-      'wheel',
+      "wheel",
       (e) => {
         e.preventDefault();
         const rect = cv.getBoundingClientRect();
         const f = Math.exp(-e.deltaY * 0.0016);
         this.camera.zoomAt(e.clientX - rect.left, e.clientY - rect.top, f);
       },
-      { passive: false }
+      { passive: false },
     );
-    cv.addEventListener('contextmenu', (e) => e.preventDefault());
+    cv.addEventListener("contextmenu", (e) => e.preventDefault());
   }
 
   _bindKeys() {
-    window.addEventListener('keydown', (e) => {
+    window.addEventListener("keydown", (e) => {
       const tag = e.target && e.target.tagName;
-      if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA' || tag === 'BUTTON') return;
+      if (
+        tag === "INPUT" ||
+        tag === "SELECT" ||
+        tag === "TEXTAREA" ||
+        tag === "BUTTON"
+      )
+        return;
       switch (e.key) {
-        case ' ':
+        case " ":
           e.preventDefault();
           this.togglePlay();
           break;
-        case 's':
-        case 'ArrowRight':
+        case "s":
+        case "ArrowRight":
           e.preventDefault();
           this.step();
           break;
-        case 'u':
+        case "u":
           this.undo();
           break;
-        case 'c':
+        case "c":
           this.follow = true;
           break;
       }
